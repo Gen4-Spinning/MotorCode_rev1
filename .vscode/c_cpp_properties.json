@@ -1,0 +1,18 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "C:\\Users\\Jonathan\\Desktop\\Projects\\Motorz\\03_300W Integrated Motor Inverter\\02_Firmware\\Motor Firmware\\Motor 1\\gen4_motor_inverter_NoSVPWM\\Core\\Inc/**"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "configurationProvider": "ms-vscode.cmake-tools"
+        }
+    ],
+    "version": 4
+}
