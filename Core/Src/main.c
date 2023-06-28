@@ -309,18 +309,17 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 
 	  if(R.MOTtemp>130 && E.motorOvertemperature==0 ){
 		  E.motorOvertemperature=E.errorFlag=1;
-		  R.motorError|=1<<ERR_MOT_SHIFT;
+		  R.motorError|=E.motorOvertemperature<<ERR_MOT_SHIFT;
 	  }
 
-	  if((ADC1_buff[1]<50 || ADC1_buff[1]>2300) ){ // open thermistor fault
+	  if((ADC1_buff[1]<50 || ADC1_buff[1]>2300)){ // open thermistor fault
 		  // look for ten consecutive cycles
 		  motThermErrorFilter ++;
 		  if (motThermErrorFilter >= 10){
 			  E.motorThermistorFault=E.errorFlag=1;
-			  R.motorError|=1<<ERR_MTF_SHIFT;
+			  R.motorError|=E.motorThermistorFault<<ERR_MTF_SHIFT;
 		  }
-	  }
-	  else{
+	  }else{
 		  motThermErrorFilter = 0;
 	  }
   }
@@ -374,7 +373,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 			HAL_UART_Receive_IT(&huart3, start_string, 3);
 		}
 	}
-
 }
 
 void HAL_ADC_LevelOutOfWindowCallback(ADC_HandleTypeDef *hadc){
@@ -492,6 +490,7 @@ HAL_Init();
 	  //force user to set the correct values before he continues.
 	  // there are no 'default' settings
   }
+  //setup.eepromMotorValsGood = 1;
 
   //TODO : startoffset cant be anything other than 0 right now. FIX
   //setup.eepromPWMValsGood = 0;
@@ -503,10 +502,7 @@ HAL_Init();
 	  //loadPWMDefaultSettings(&settingVarObj);
 	  setup.defaults_eepromWriteFailed += writePWMSettingsToEEPROM(&sV);
   }
-
   //setup PID with the correct Settings.
-  //TODO: make it possible to change values through uart
-  //and see the results also of changing this through the uart.
   setupPID(&PID,sV.Kp,sV.Ki,sV.ff_percent,sV.start_offset);
 
   //Now setup the Encoder.Use whatever value you got from the eeprom, even if its bad.
@@ -571,14 +567,6 @@ HAL_Init();
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  //TODO - something with the LEDs
-	  /*HAL_GPIO_TogglePin(GPIOC,LED1_Pin);
-	  HAL_Delay(100);
-	  HAL_GPIO_TogglePin(GPIOC,LED2_Pin);
-	  HAL_Delay(100);
-	  HAL_GPIO_Togg,lePin(GPIOC,LED3_Pin);
-	  HAL_Delay(100);*/
-
 
 	  //send all Error MSgs every 1 sec here
 	  if ((E.errorFlag == 1) && (S.errorMsgSentOnce == 0)){
@@ -593,7 +581,6 @@ HAL_Init();
 	  //move motorState to CONFIGState when doing Console Work. will prevent running CAN-start/pause/halt msgs
 	  //Also only allow when your in IDLE STATE
 	  if (S.motorState == IDLE_STATE){
-
 		  if(configuration_mode_flg){
 			  S.motorState = CONFIG_STATE;
 			  configurationFromTerminal(); // BLOCKING
