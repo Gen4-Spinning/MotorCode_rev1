@@ -191,7 +191,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		  }
 		  else{
 			  // if calibration state we done want to turn off all the Channels.
-			  if ((S.motorState != CALIBRATION_STATE)&&(S.motorState != CONFIG_STATE)){
+			  if ((S.motorState != CALIBRATION_STATE)&&(S.motorState != CONSOLE_STATE)){
 				  TurnOffAllChannels();
 			  }
 		  }
@@ -219,7 +219,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 			R.motor_state = S.motorState;
 			R.appliedDuty = rampDuty.currentDuty;
 			R.presentRPM = encSpeed.speedRPM;
-			if (C.logging){ //Console Logging.
+			if ((C.logging)|| (S.logginginternalEnable)){ //Console Logging.
 				if ((encSpeed.zeroSpeed == 1) && (T.tim16_oneSecTimer > 3)){ // need the three seconds otherwise encspeed is zero when u start and logging immediately stops.
 					C.logging = 0;
 				}
@@ -256,7 +256,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 			R.IntegralTerm = PID.Ki_term;
 			R.feedforwardTerm = PID.feedForwardTerm;
 
-			if (C.logging){ //Console Logging.
+			if ((C.logging) || (S.logginginternalEnable)){ //Console Logging.
 				if ((encSpeed.zeroSpeed == 1) && (T.tim16_oneSecTimer > 3)){
 					C.logging = 0;
 				}
@@ -365,7 +365,7 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
-	if (S.motorState == IDLE_STATE){
+	if ((S.motorState == IDLE_STATE) || (S.motorState == ERROR_STATE)){
 		if((start_string[0]=='$')&&(start_string[1]=='$')&&(start_string[2]=='$')){
 			configuration_mode_flg=1;
 			start_string[0]=start_string[1]=start_string[2]=0;
@@ -569,20 +569,42 @@ HAL_Init();
   {
 
 	  //send all Error MSgs every 1 sec here
-	  if ((E.errorFlag == 1) && (S.errorMsgSentOnce == 0)){
+	  if (E.errorFlag == 1){
 		  S.motorState = ERROR_STATE;
-		  FDCAN_errorFromMotor();
-		  S.errorMsgSentOnce = 1;
-		  //sprintf(UART_buffer,"\r\n CAN-Sending Error Frame-%02d",R.motorError);
-		  //HAL_UART_Transmit_IT(&huart3,(uint8_t *)UART_buffer,35);
+		  RM.controlType = 0; // stop control loops
+		  if (S.errorMsgSentOnce == 0){
+			  FDCAN_errorFromMotor();
+			  sprintf(UART_buffer,"Error!ErrorReason = %05d\r\n",R.motorError);
+			  HAL_UART_Transmit_IT(&huart3,(uint8_t *)UART_buffer,27);
+			  S.errorMsgSentOnce = 1;
+		  }
+		  // go inside the console and do things
+		  //like come out of lob mode, and reset motor
+		  if(configuration_mode_flg){
+			  S.motorState = CONSOLE_STATE;
+			  configurationFromTerminal(); // BLOCKING
+			  configuration_mode_flg=0;
+			  HAL_UART_Receive_IT(&huart3, start_string, 3);
+			  S.motorState = IDLE_STATE;
+		  }
 	  }
 
+	  /* logging always , except when your in CONSOLE STATE, or when encSpeed is zero */
+	  if (S.loggingEnabled){
+		  if (S.motorState == CONSOLE_STATE){
+			  S.logginginternalEnable = 0;
+		  }else if (encSpeed.zeroSpeed == 1){
+			  S.logginginternalEnable = 0;
+		  }else{
+			  S.logginginternalEnable = 1;
+		  }
+	  }
 
 	  //move motorState to CONFIGState when doing Console Work. will prevent running CAN-start/pause/halt msgs
 	  //Also only allow when your in IDLE STATE
 	  if (S.motorState == IDLE_STATE){
 		  if(configuration_mode_flg){
-			  S.motorState = CONFIG_STATE;
+			  S.motorState = CONSOLE_STATE;
 			  configurationFromTerminal(); // BLOCKING
 			  configuration_mode_flg=0;
 			  HAL_UART_Receive_IT(&huart3, start_string, 3);

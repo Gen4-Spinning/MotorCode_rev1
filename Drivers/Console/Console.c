@@ -409,6 +409,36 @@ void MX_TIM1_Init_Copy(void){
 
 }
 
+
+
+uint8_t ToggleLogSettings(void){
+	uint8_t firstTime = 1;
+	int noEntered = 0;
+	while(1){
+		if (firstTime){
+			printf("\r\n***TOGGLE LOG SETTING***");
+			printf("\r\n ---DANGER! PROCEED CAUTIOUSLY---");
+			printf("\r\n Log Enabled ? :%01d",S.loggingEnabled);
+			printf("\r\n Press 1 to toggle the logging setting");
+			printf("\r\n Enter -1 to exit");
+			firstTime = 0;
+		}
+
+		noEntered = waitForNoInput();
+		if (noEntered == -1){
+			noEntered = 0;
+			break;
+		}else if (noEntered == 1){
+			S.loggingEnabled = !(S.loggingEnabled);
+			printf("\r\n Log Enabled ? :%01d",S.loggingEnabled);
+			noEntered = 0;
+		}else{
+			noEntered = 0;
+		}
+	}
+
+	return 1;
+}
 uint8_t runMotorCalibrationRoutine(void){
 	int noEntered = 0;
 	char skipScanf = 0;
@@ -785,6 +815,10 @@ void configurationFromTerminal(void)
 			  printf("\r\n Bye!");
 			  printf("\r\n ************");
 			  NVIC_SystemReset();
+			  noEntered = 0;
+		  }
+		  if (noEntered == 10){
+			  firstTime = ToggleLogSettings();
 			  noEntered = 0;
 		  }
 	  }

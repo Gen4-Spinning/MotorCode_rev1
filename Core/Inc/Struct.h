@@ -21,6 +21,8 @@ typedef struct StateStruct
 	char motorState;
 	char oneTime;
 	char emergencyStop;
+	char loggingEnabled;
+	char logginginternalEnable;
 
 }StateTypeDef;
 

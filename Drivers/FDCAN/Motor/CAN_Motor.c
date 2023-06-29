@@ -28,7 +28,9 @@ void FDCAN_runtimedataFromMotor(void)
 	TxData[10]=(R.busVoltageADC)>>8;
 	TxData[11]=R.busVoltageADC;
 
-	HAL_FDCAN_AddMessageToTxFifoQ(&hfdcan1, &TxHeader, TxData);
+	if (HAL_FDCAN_GetTxFifoFreeLevel(&hfdcan1)>1){
+		HAL_FDCAN_AddMessageToTxFifoQ(&hfdcan1, &TxHeader, TxData);
+	}
 }
 
 void FDCAN_analysisdataFromMotor(void)
@@ -49,7 +51,9 @@ void FDCAN_analysisdataFromMotor(void)
 	TxData[10]=(R.feedforwardTerm)>>8;
 	TxData[11]=R.feedforwardTerm;
 
-	HAL_FDCAN_AddMessageToTxFifoQ(&hfdcan1, &TxHeader, TxData);
+	if (HAL_FDCAN_GetTxFifoFreeLevel(&hfdcan1)>1){
+		HAL_FDCAN_AddMessageToTxFifoQ(&hfdcan1, &TxHeader, TxData);
+	}
 }
 
 void FDCAN_errorFromMotor(void)
@@ -58,7 +62,12 @@ void FDCAN_errorFromMotor(void)
 	TxHeader.DataLength = FDCAN_DLC_BYTES_2;
 	TxData[0]=(R.motorError)>>8;
 	TxData[1]=(R.motorError);
-	HAL_FDCAN_AddMessageToTxFifoQ(&hfdcan1, &TxHeader, TxData);
+	//while(HAL_FDCAN_GetTxFifoFreeLevel(&hfdcan1)==0);
+	//Above line blocks when no CAN connection is there, so prevents lob error resolution with the serial port
+	//instead we send a msg if there is any free space.
+	if (HAL_FDCAN_GetTxFifoFreeLevel(&hfdcan1)>0){
+		HAL_FDCAN_AddMessageToTxFifoQ(&hfdcan1, &TxHeader, TxData);
+	}
 }
 
 void FDCAN_parseForMotor(uint8_t my_address)
@@ -114,6 +123,7 @@ void FDCAN_driveresponseFromMotor(uint8_t source)
 	TxHeader.Identifier =(0xA0401<<8)|source;
 	TxHeader.DataLength = FDCAN_DLC_BYTES_1;
 	TxData[0]=source;
+	while(HAL_FDCAN_GetTxFifoFreeLevel(&hfdcan1)==0);
 	HAL_FDCAN_AddMessageToTxFifoQ(&hfdcan1, &TxHeader, TxData);
 }
 
@@ -122,6 +132,7 @@ void FDCAN_ACKresponseFromMotor(uint8_t source)
 	TxHeader.Identifier =(0x060F01<<8)|source;
 	TxHeader.DataLength = FDCAN_DLC_BYTES_1;
 	TxData[0]=1;
+	while(HAL_FDCAN_GetTxFifoFreeLevel(&hfdcan1)==0);
 	HAL_FDCAN_AddMessageToTxFifoQ(&hfdcan1, &TxHeader, TxData);
 }
 

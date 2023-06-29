@@ -210,13 +210,13 @@ void SysTick_Handler(void)
 
   /* USER CODE END SysTick_IRQn 0 */
   HAL_IncTick();
-  error_ms_counter ++;
   /* USER CODE BEGIN SysTick_IRQn 1 */
   if (S.motorState == ERROR_STATE){
-	  if (error_ms_counter >= 1000){
-		  HAL_GPIO_TogglePin(FAULT_LED_GPIO_Port, FAULT_LED_Pin);
-		  error_ms_counter = 0;
-		  S.errorMsgSentOnce = 0;
+  	error_ms_counter ++;
+  	if (error_ms_counter >= 1000){
+	  HAL_GPIO_TogglePin(FAULT_LED_GPIO_Port, FAULT_LED_Pin);
+	  error_ms_counter = 0;
+	  S.errorMsgSentOnce = 0;
 	  }
   }
   /* USER CODE END SysTick_IRQn 1 */

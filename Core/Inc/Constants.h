@@ -12,7 +12,7 @@
 #define IDLE_STATE 1
 #define RUN_STATE 2
 #define ERROR_STATE 3
-#define CONFIG_STATE 4
+#define CONSOLE_STATE 4
 #define CALIBRATION_STATE 5
 
 //definition of RUN/STOP/PAUSE COMMANDS

@@ -133,7 +133,9 @@ void AS5047_writeRegister(uint16_t registerAddress, uint16_t registerValue) {
   contentFrame.values.data = registerValue;
   contentFrame.values.low = 0; //always low
   contentFrame.values.pard = parityCheck(contentFrame.raw);
-  uint8_t out = AS5047_SPI_Write(command.raw, contentFrame.raw);
+  //TODO Use the out in the below fn and handle errors
+  //uint8_t out = AS5047_SPI_Write(command.raw, contentFrame.raw);
+  AS5047_SPI_Write(command.raw, contentFrame.raw);
 }
 
 uint16_t AS5047_ReadZeroValue(void){
