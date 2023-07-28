@@ -131,9 +131,9 @@ uint8_t configurePIDSettings(void){
 		else if (insidePIDLoop == 0){
 			if (noEntered == 1){
 				printf("\r\n -----Kp----");
-				printf("\r\n Current Kp value :%5.2f. Enter new Value x 100 : (0-500)",sV.Kp);
+				printf("\r\n Current Kp value :%6.3f. Enter new Value x 1000 : (0-5000)",sV.Kp);
 				minLimit = 0;
-				maxLimit = 500;
+				maxLimit = 5000;
 				pidQueryNo = 1;
 				insidePIDLoop = 1;
 			}
@@ -165,12 +165,12 @@ uint8_t configurePIDSettings(void){
 			if (newPIDquery == 0){
 				if ((noEntered <= maxLimit ) && ( noEntered >= minLimit)){
 					if (pidQueryNo == 1){
-						Kp_new = noEntered/100.0;
-						printf("\r\n Kp = %5.2f",Kp_new);
+						Kp_new = noEntered/1000.0;
+						printf("\r\n Kp = %6.3f",Kp_new);
 						newPIDquery = 1;
 					}else if (pidQueryNo == 2){
-						Ki_new = noEntered/100.0;
-						printf("\r\n Ki = %5.2f",Ki_new);
+						Ki_new = noEntered/1000.0;
+						printf("\r\n Ki = %6.3f",Ki_new);
 						newPIDquery = 1;
 					}else if (pidQueryNo == 3){
 						FF_factor_new = noEntered;
@@ -191,9 +191,9 @@ uint8_t configurePIDSettings(void){
 			if (newPIDquery){
 				if(pidQueryNo == 1){
 					printf("\r\n -----Ki-----");
-					printf("\r\n Current Kp value :%5.2f. Enter new Value x 100 : (0-500)",sV.Ki);
+					printf("\r\n Current Kp value :%6.3f. Enter new Value x 1000 : (0-5000)",sV.Ki);
 					minLimit = 0;
-					maxLimit = 500;
+					maxLimit = 5000;
 				}else if (pidQueryNo == 2){
 					printf("\r\n -----FF_Percent-----");
 					printf("\r\n Current FF_Percent value :%2d.Enter new value (0-80)",sV.ff_percent);
@@ -307,7 +307,7 @@ uint8_t printSettings(void){
 			printf("\r\n MOTOR CAN ID = %d",sV.MOTID);
 			printf("\r\n MOTOR Encoder Offset = %d",sV.AMS_offset_index);
 			printf("\r\n MOTOR Default Dir = %d (CW=0,CCW=1)",sV.default_direction);
-			printf("\r\n Kp:%5.2f, Ki:%5.2f, FF_percent:%02d, StartOffset:%03d",sV.Kp,sV.Ki,sV.ff_percent,sV.start_offset);
+			printf("\r\n Kp:%6.3f, Ki:%6.3f, FF_percent:%02d, StartOffset:%03d",sV.Kp,sV.Ki,sV.ff_percent,sV.start_offset);
 			printf("\r\n Enter -1 to exit");
 			firstTime = 0;
 		}
@@ -417,7 +417,7 @@ uint8_t ToggleLogSettings(void){
 	while(1){
 		if (firstTime){
 			printf("\r\n***TOGGLE LOG SETTING***");
-			printf("\r\n ---DANGER! PROCEED CAUTIOUSLY---");
+			printf("\r\n ");
 			printf("\r\n Log Enabled ? :%01d",S.loggingEnabled);
 			printf("\r\n Press 1 to toggle the logging setting");
 			printf("\r\n Enter -1 to exit");
