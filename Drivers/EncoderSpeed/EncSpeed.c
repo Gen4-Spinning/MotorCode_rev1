@@ -7,9 +7,7 @@ extern TIM_HandleTypeDef htim2;
 extern char UART_buffer[50];
 extern UART_HandleTypeDef huart3;
 
-uint16_t CW_directionError = 0;
-uint16_t CCW_directionError = 0;
-uint8_t directionErrorFlag = 0;
+uint16_t previousdeltaVal;
 
 void InitializeEncSpeed_TypeDef(EncSpeed_TypeDef *e){
 	e->EncSpeed_calcTime_ms = 1;
@@ -45,9 +43,11 @@ void CalcEncSpeed(EncSpeed_TypeDef *e,sixSectorCntrl *s){
 		  if (e->deltaEncCount < 0){
 			  e->deltaEncCount  = e->currentEncCount + (2048 - e->previousEncCount);
 			  }
-		  CW_directionError = 0;
+		  e->CW_directionError = 0;
+		  e->directionErr = 0;
 		  }else{
-			  CW_directionError += 1;
+			  e->CW_directionError += 1;
+			  e->directionErr = 1;
 			  // if the RPM is close to zero then the difference in directions is OK.
 			  //we just handle it by making delta count = 0;
 			  if (e->total_deltaEncCount <= 2){
@@ -59,29 +59,32 @@ void CalcEncSpeed(EncSpeed_TypeDef *e,sixSectorCntrl *s){
 
 	  // here current Count will be less than previous Count
 	  //current ---2047--2048--0--1--2--previous
-	  if (s->direction == CCW){
+	else if (s->direction == CCW){
 		  if (e->encDirection == CCW){
 			  e->deltaEncCount = e->previousEncCount - e->currentEncCount;
 			  if (e->deltaEncCount < 0){
 				  e->deltaEncCount  = ((2048- e->currentEncCount) +  e->previousEncCount);
 			  }
-			  CCW_directionError = 0;
+			  e->CCW_directionError = 0;
+			  e->directionErr = 0;
 		  }else{
-			  CCW_directionError += 1;
+			  e->CCW_directionError += 1;
+			  e->directionErr = 1;
 			  // if the RPM is close to zero then the difference in directions is OK.
 			  //we just handle it by making delta count = 0;
 			  if (e->total_deltaEncCount <= 2){
 					  e->deltaEncCount = 0;
 			  }
+
 		  }
 	  }
+	else{}
 
-	  if ((CW_directionError >= 200) || (CCW_directionError >= 200)){
-		  directionErrorFlag = 1;
-
-	  }
-
-	  uint16_t previousdeltaVal;
+	// MODIFIED FOR COILER. WHEN it starts it jerks in the opposite direction
+	  // causing it to give a momentary direction error, and then a bad RPM reading
+	  // which then triggers a tracking fault. So to fix that we re going to not
+	  // update the RPm when the reading is bad..
+	 //TODO NEED TO FIX FOR A REAL CASE SOMEHOW
 	  if (e->speedArrayFilled==0){
 		  e->speedArray[e->bufferIdx] = e->deltaEncCount;
 		  e->total_deltaEncCount += e->deltaEncCount;

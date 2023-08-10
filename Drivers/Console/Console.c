@@ -207,7 +207,7 @@ uint8_t configurePIDSettings(void){
 				}
 				if (pidQueryNo == 4){
 					printf("\r\n -----All values Entered!-----");
-					printf("\r\n Kp:%5.2f, Ki:%5.2f, FF_percent:%02d, StartOffset:%03d",Kp_new,Ki_new,FF_factor_new,startOffsetNew);
+					printf("\r\n Kp:%6.3f, Ki:%6.3f, FF_percent:%02d, StartOffset:%03d",Kp_new,Ki_new,FF_factor_new,startOffsetNew);
 					printf("\r\n Write into Eeprom and enable? (1 for yes,0 for no)");
 					eepromWrite = 1;
 				}
