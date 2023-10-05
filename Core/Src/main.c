@@ -305,7 +305,7 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
   {
 	  R.busVoltageADC=ADC1_buff[0];
 	  R.voltageVolts=(BUS_VOLTAGE_GAIN*ADC1_buff[0]);
-	  R.MOTtemp=32;//get_MOSFET_temperature(ADC1_buff[1]);//MOSFET LUT is used because beta value is almost the same, 0.5 deg difference
+	  R.MOTtemp=get_MOSFET_temperature(ADC1_buff[1]);//MOSFET LUT is used because beta value is almost the same, 0.5 deg difference
 
 	  if(R.MOTtemp>125 && E.motorOvertemperature==0 ){
 		  E.motorOvertemperature=E.errorFlag=1;
