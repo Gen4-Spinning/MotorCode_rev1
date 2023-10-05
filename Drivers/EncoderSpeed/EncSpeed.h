@@ -30,6 +30,11 @@ typedef struct EncSpeed{
 	uint16_t speed_s16;
 	float speedRPM;
 	char zeroSpeed;
+
+
+	uint16_t CCW_directionError;
+	uint16_t CW_directionError;
+	uint8_t directionErr;
 }EncSpeed_TypeDef;
 
 void InitializeEncSpeed_TypeDef(EncSpeed_TypeDef *e);
